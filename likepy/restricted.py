@@ -2,6 +2,7 @@
 from .restricted_builtins import safe_builtins
 from collections import namedtuple
 from .transformer import RestrictingNodeTransformer
+from .exceptions import CompileError
 
 import ast
 import warnings
@@ -107,7 +108,8 @@ class RestrictedPython:
         if '__builtins__' not in restricted_globals:
             restricted_globals['__builtins__'] = safe_builtins.copy()
         result = compile_restricted_eval(source)
-        assert result.errors == (), result.errors
+        if result.errors:
+            raise CompileError(result.errors[0])
         assert result.code is not None
         return eval(result.code, restricted_globals)
 
