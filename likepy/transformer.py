@@ -399,11 +399,6 @@ class RestrictingNodeTransformer(ast.NodeTransformer):
 
     def check_function_argument_names(self, node):
         # In python3 arguments are always identifiers.
-        # In python2 the 'Python.asdl' specifies expressions, but
-        # the python grammer allows only identifiers or a tuple of
-        # identifiers. If its a tuple 'tuple parameter unpacking' is used,
-        # which is gone in python3.
-        # See https://www.python.org/dev/peps/pep-3113/
 
         for arg in node.args.args:
             self.check_name(node, arg.arg)

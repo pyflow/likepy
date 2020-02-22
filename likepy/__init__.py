@@ -14,5 +14,14 @@ if not IS_CPYTHON:
     warnings.warn_explicit(
         NOT_CPYTHON_WARNING, RuntimeWarning, 'likepy', 0)
 
-from .restricted import restrictedpy, RestrictedPython
-from .restricted_expression import restrictedexpr, RestrictedExpression
+from .restricted import (
+    restrictedpy,
+    restrictedexpr,
+    RestrictedPython,
+    RestrictedExpression
+)
+
+from .starlark import (
+    starlark,
+    StarLark
+)

@@ -1,4 +1,4 @@
-from likepy.restricted_expression import restrictedexpr, RestrictedExpression
+from likepy.restricted import restrictedexpr, RestrictedExpression
 
 import pytest
 
