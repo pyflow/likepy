@@ -1,11 +1,12 @@
 
 import parso
+import os
 from parso.tree import NodeOrLeaf, BaseNode, Leaf
 from parso.python.tree import PythonLeaf, PythonBaseNode
 import contextlib
 import sys
 
-def prettryformat(node, _indent=0):
+def prettyformat(node, _indent=0):
     indent_str='    '
     if node is None:  # pragma: nocovrage
         return repr(node)
@@ -27,7 +28,7 @@ def prettryformat(node, _indent=0):
             return state.indent * indent_str
 
         def _pformat(el, _indent=0):
-            return prettryformat(el, _indent=_indent)
+            return prettyformat(el, _indent=_indent)
 
         out = type(node).__name__ + '(\n'
         with indented():
@@ -39,13 +40,31 @@ def prettryformat(node, _indent=0):
         return out
 
 def dump_ast(node):
-    print(prettryformat(node))
+    print(prettyformat(node))
 
 class LikepyCompiler:
-    pass
+    def __init__(self):
+        pass
+
+    def compile_file(self, file_path):
+        with open(file_path, "rb") as f:
+            code = f.read()
+            file_name = os.path.basename(file_path)
+            ext = os.path.extname(file_path)
+            dialect = 'starlette' if ext == '.star' else ext[1:]
+            return self.compile(code, file_name=file_name, dialect)
+
+    def compile(self, source, file_name="<string>", dialect="starlette"):
+        if dialect == 'starlette':
+            visitor = StarletteVisitor()
+        else:
+            raise Exception('only support starlette dialect now.')
+
+        module = parso.parse(source)
+        visitor.visit(module)
 
 
-class LikepyVisitor:
+class StarletteVisitor:
     def visit(self, node):
         """Visit a node."""
         print('visit:', node)
