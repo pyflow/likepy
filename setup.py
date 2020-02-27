@@ -34,8 +34,9 @@ setup(
     long_description=(
         read('README.md')
     ),
-    long_description_content_type='text/',
+    long_description_content_type='text/markdown',
     classifiers=[
+        'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Operating System :: OS Independent',
@@ -43,8 +44,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: Implementation :: CPython',
-        'Topic :: Security',
+        'Programming Language :: Python :: Implementation :: CPython'
     ],
     keywords='restricted starlark',
     author='Zhuo Wei',
@@ -53,6 +53,7 @@ setup(
     },
     packages=find_packages('likepy'),
     install_requires=[
+        "parso>=0.6.1"
     ],
     python_requires=">=3.6",  # NOQA: E501
     tests_require=tests_require,
