@@ -5,6 +5,7 @@ from parso.tree import NodeOrLeaf, BaseNode, Leaf
 from parso.python.tree import PythonLeaf, PythonBaseNode
 import contextlib
 import sys
+from .starlark import StarlarkGrammar
 
 def prettyformat(node, _indent=0):
     indent_str='    '
@@ -52,7 +53,7 @@ class LikepyCompiler:
             file_name = os.path.basename(file_path)
             ext = os.path.extname(file_path)
             dialect = 'starlette' if ext == '.star' else ext[1:]
-            return self.compile(code, file_name=file_name, dialect)
+            return self.compile(code, file_name=file_name, dialect=dialect)
 
     def compile(self, source, file_name="<string>", dialect="starlette"):
         if dialect == 'starlette':
@@ -60,8 +61,10 @@ class LikepyCompiler:
         else:
             raise Exception('only support starlette dialect now.')
 
-        module = parso.parse(source)
-        visitor.visit(module)
+        grammar = StarlarkGrammar()
+        module = grammar.parse(source)
+        #visitor.visit(module)
+        return module
 
 
 class StarletteVisitor:

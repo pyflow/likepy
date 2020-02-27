@@ -2,7 +2,9 @@
 import os
 import fnmatch
 import parso
-from likepy.compiler import dump_ast
+from likepy.compiler import dump_ast, LikepyCompiler
+
+lkpy = LikepyCompiler()
 
 def test_star_parse():
     asset_dir = './assets/starlark'
@@ -15,7 +17,9 @@ def test_star_parse():
 
     for star in star_files:
         with open(star, 'rb') as f:
-            code = f.read()
-            module = parso.parse(code)
-            dump_ast(module)
-            break
+            codes = f.read()
+            for code in codes.decode('utf-8').split('---'):
+                module = lkpy.compile(code)
+                dump_ast(module)
+                if star == 'assign.star':
+                    break
