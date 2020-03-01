@@ -6,6 +6,7 @@ from parso.python.tree import PythonLeaf, PythonBaseNode
 import contextlib
 import sys
 from .starlark import StarlarkGrammar
+import ast
 
 def prettyformat(node, _indent=0):
     indent_str='    '
@@ -63,29 +64,51 @@ class LikepyCompiler:
 
         grammar = StarlarkGrammar()
         module = grammar.parse(source)
-        #visitor.visit(module)
+        visitor.visit(module)
+        print(ast.dump(visitor.new_root_node))
         return module
 
 
 class StarletteVisitor:
-    def visit(self, node):
+    def __init__(self):
+        self.new_root_node = None
+
+    def visit(self, node, is_leaf=False):
         """Visit a node."""
         print('visit:', node)
-        method = 'visit_' + node.__class__.__name__
-        visitor = getattr(self, method, self.generic_visit)
-        return visitor(node)
-
-    def visit_leaf(self, node):
-        """Visit a node."""
-        method = 'visit_' + node.__class__.__name__
-        visitor = getattr(self, method, None)
+        type_name = type(node).__name__
+        if type_name == 'PythonNode':
+            type_name = node.type
+        method = 'visit_' + type_name
+        visitor = getattr(self, method, self.generic_visit if not is_leaf else None)
         if visitor:
             return visitor(node)
 
     def generic_visit(self, node):
         """Called if no explicit visitor function exists for a node."""
+        new_nodes = []
         for child in node.children:
             if isinstance(child, parso.tree.BaseNode):
-                self.visit(child)
+                new_node = self.visit(child)
             elif isinstance(child, parso.tree.NodeOrLeaf):
-                self.visit_leaf(child)
+                new_node = self.visit(child, is_leaf=True)
+            if isinstance(new_node, ast.AST):
+                new_nodes.append(new_node)
+        return new_nodes
+
+
+    def visit_Module(self, node):
+        new_node = ast.Module()
+        if self.new_root_node is None:
+            self.new_root_node = new_node
+        child_nodes = self.generic_visit(node)
+        new_node._fields = tuple(child_nodes)
+
+    def visit_simple_stmt(self, node):
+        print('visit_simple_stmt')
+        new_nodes = self.generic_visit(node)
+        if len(new_nodes) > 0:
+            return new_nodes[0]
+
+    def visit_atom_expr(self, node):
+        pass
