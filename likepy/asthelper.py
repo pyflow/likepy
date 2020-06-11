@@ -70,3 +70,8 @@ def dump_tree(node, name=None, initial_indent='', indentation='    ',
         node = (',\n%s' % level).join(node).lstrip()
         return '%s\n%s%s%s' % (prefix, level, node, suffix)
     return dump(node, name, initial_indent)
+
+
+def dump_code(code):
+    tree = ast.parse(code)
+    print(dump_tree(tree))

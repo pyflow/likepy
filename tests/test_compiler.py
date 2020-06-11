@@ -3,7 +3,7 @@ import parso
 from likepy.compiler import dump_ast
 from likepy.compiler import dump_ast, LikepyCompiler
 import ast
-from likepy.asthelper import dump_tree
+from likepy.asthelper import dump_code
 
 lkpy = LikepyCompiler()
 
@@ -25,6 +25,5 @@ def controlflow():
 def test_dump():
     #module = parso.parse(code)
     #dump_ast(module)
-    tree = ast.parse(code.replace('assert', 'massert'))
-    print(dump_tree(tree))
+    dump_code(code.replace('assert', 'massert'))
     module = lkpy.compile(code)
