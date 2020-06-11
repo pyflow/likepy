@@ -2,7 +2,7 @@
 import parso
 import os
 from parso.tree import NodeOrLeaf, BaseNode, Leaf
-from parso.python.tree import PythonLeaf, PythonBaseNode
+from parso.python.tree import PythonLeaf, PythonBaseNode, Name, PythonNode
 import contextlib
 import sys
 from .starlark import StarlarkGrammar
@@ -111,4 +111,10 @@ class StarletteVisitor:
             return new_nodes[0]
 
     def visit_atom_expr(self, node):
-        pass
+        new_node = ast.Expr()
+        children = node.children
+        if isinstance(children[0], Name):
+            for child in children[1:]:
+                if child.type == 'trailer':
+                    pass
+        #return new_node
