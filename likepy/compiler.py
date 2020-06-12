@@ -75,7 +75,7 @@ class StarletteVisitor:
 
     def visit(self, node, is_leaf=False):
         """Visit a node."""
-        print('visit:', node)
+        print('visit:', node, node.type)
         type_name = type(node).__name__
         if type_name == 'PythonNode':
             type_name = node.type
@@ -118,3 +118,6 @@ class StarletteVisitor:
                 if child.type == 'trailer':
                     pass
         #return new_node
+
+    def visit_trailer(self, node):
+        pass
