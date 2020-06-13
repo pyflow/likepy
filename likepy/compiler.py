@@ -15,7 +15,7 @@ def prettyformat(node, _indent=0):
     elif isinstance(node, str):
         return repr(node)
     elif isinstance(node, PythonLeaf):
-        return '{}({})'.format(type(node).__name__, repr(node.value))
+        return '<{} {}> ({})'.format(type(node).__name__, node.type, repr(node.value))
     else:
         class state:
             indent = _indent
@@ -32,12 +32,12 @@ def prettyformat(node, _indent=0):
         def _pformat(el, _indent=0):
             return prettyformat(el, _indent=_indent)
 
-        out = type(node).__name__ + '(\n'
+        out = '<' + type(node).__name__  + " " + node.type + '> (\n'
         with indented():
             assert len(node.children) > 0
             for field in node.children:
                 representation = _pformat(field, state.indent)
-                out += '{}{}={},\n'.format(indentstr(), repr(field.type), representation)
+                out += '{}<{} {}>={},\n'.format(indentstr(), type(node).__name__,  repr(field.type), representation)
         out += indentstr() + ')'
         return out
 

@@ -11,11 +11,14 @@ class Tokens:
     EVAL_INPUT = 'eval_input'
     SINGLE_INPUT = 'single_input'
     STMT = 'stmt'
+    AWAIT = 'await'
     SIMPLE_STMT = 'simple_stmt'
     COMPOUND_STMT = 'compound_stmt'
     SMALL_STMT = 'small_stmt'
-
+    TRAILER = 'trailer'
     NEWLINE = 'newline'
+    ATOM = 'atom'
+    NAME = 'name'
 
 tokens = Tokens()
 
@@ -82,3 +85,52 @@ class ASTBuilder:
                 raise AssertionError("unhandled small statement")
         else:
             return self.handle(stmt, None)
+
+    def handle_atom_expr(self, node, parent_node):
+        await_expr = False
+        atom = 0
+        if node.children[0].type == tokens.AWAIT:
+            await_expr = True
+            atom = 1
+
+        atom_expr = self.handle_atom(node.children[atom], node)
+
+        trailers = node.children[1:]
+
+        for trailer in trailers:
+            if trailer.type != tokens.TRAILER:
+                break
+            tmp_atom_expr = self.handle_trailer(trailer, atom_expr)
+            tmp_atom_expr.lineno = atom_expr.lineno
+            tmp_atom_expr.col_offset = atom_expr.col_offset
+            atom_expr = tmp_atom_expr
+
+        if await_expr:
+            return ast.Await(atom_expr, node.get_lineno(),
+                             node.get_column())
+        else:
+            return atom_expr
+
+    def handle_atom(self, node, parent_node):
+        if node.type == tokens.ATOM:
+            atome_node = node
+            first_child = node.children[0]
+        else:
+            atom_node = None
+            first_child = node
+        first_child_type = first_child.type
+        print(first_child)
+        if first_child_type == tokens.NAME:
+            name = first_child.value
+            lineno, column = first_child.start_pos
+            if name == "None":
+                w_singleton = None
+            elif name == "True":
+                w_singleton = True
+            elif name == "False":
+                w_singleton = False
+            else:
+                return ast.Name(name, ast.Load, lineno, column)
+            return ast.NameConstant(w_singleton, lineno, column)
+        else:
+            raise AssertionError("unknown atom")
