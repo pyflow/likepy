@@ -21,7 +21,6 @@ tests_require = [
     'pytest-mock',
 ]
 
-
 setup(
     name='likepy',
     version=version,
@@ -51,7 +50,7 @@ setup(
     author_email='zeaphoo@qq.com',
     project_urls={
     },
-    packages=find_packages('likepy'),
+    packages=find_packages(),
     install_requires=[
         "parso>=0.6.1"
     ],
