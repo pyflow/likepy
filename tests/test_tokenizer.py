@@ -1,9 +1,5 @@
 
-from likepy.compiler import dump_ast
-from likepy.compiler import dump_ast, LikepyCompiler
-from likepy.asthelper import dump_code
-
-lkpy = LikepyCompiler()
+from likepy.tokenizer import LikepyTokenizer
 
 code = '''
 load("assert.star", "assert")
@@ -20,5 +16,8 @@ def controlflow():
     assert.true(x)
 '''
 
-def test_dump():
-    module = lkpy.compile(code)
+def test_simple_token_1():
+    t = LikepyTokenizer(code=code)
+    for token in t.get_tokens():
+        print(token)
+    assert token.type == 0

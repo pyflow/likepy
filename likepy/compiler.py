@@ -1,11 +1,7 @@
 
-import parso
 import os
-from parso.tree import NodeOrLeaf, BaseNode, Leaf
-from parso.python.tree import PythonLeaf, PythonBaseNode, Name, PythonNode
 import contextlib
 import sys
-from .starlark import StarlarkGrammar
 import ast
 
 def prettyformat(node, _indent=0):
@@ -62,11 +58,6 @@ class LikepyCompiler:
         else:
             raise Exception('only support starlette dialect now.')
 
-        grammar = StarlarkGrammar()
-        module = grammar.parse(source)
-        visitor.visit(module)
-        print(ast.dump(visitor.new_root_node))
-        return module
 
 
 class StarletteVisitor:
