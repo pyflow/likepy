@@ -6,9 +6,14 @@ import ast
 
 from typing import Any, Callable, cast, Dict, Optional, Tuple, Type, TypeVar
 
+T = TypeVar("T")
+P = TypeVar("P", bound="StarLarkParser")
+F = TypeVar("F", bound=Callable[..., Any])
+
+
 class StarLarkParser:
     def __init__(self, sourcepath="", code=None, verbose: bool = False):
-        self.tokenizer = LikepyTokenizer(sourcepath=sourcepath, code=code)
+        self._tokenizer = LikepyTokenizer(sourcepath=sourcepath, code=code)
         self._verbose = verbose
         self._level = 0
         self._cache: Dict[Tuple[Mark, str, Tuple[Any, ...]], Tuple[Any, Mark]] = {}
@@ -116,6 +121,5 @@ class StarLark:
 
     def exec(self, source, starlark_globals=None):
         pass
-
 
 starlark = StarLark()

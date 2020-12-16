@@ -1,8 +1,7 @@
 
 import os
 import fnmatch
-import parso
-from likepy.compiler import dump_ast, LikepyCompiler
+from likepy.compiler import LikepyCompiler
 
 lkpy = LikepyCompiler()
 
@@ -20,6 +19,5 @@ def test_star_parse():
             codes = f.read()
             for code in codes.decode('utf-8').split('---'):
                 module = lkpy.compile(code)
-                dump_ast(module)
                 if star == 'assign.star':
                     break

@@ -35,7 +35,7 @@ setup(
     ),
     long_description_content_type='text/markdown',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Operating System :: OS Independent',
@@ -52,7 +52,6 @@ setup(
     },
     packages=find_packages(),
     install_requires=[
-        "parso>=0.6.1"
     ],
     python_requires=">=3.6",  # NOQA: E501
     tests_require=tests_require,

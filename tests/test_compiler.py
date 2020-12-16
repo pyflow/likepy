@@ -1,6 +1,5 @@
 
-from likepy.compiler import dump_ast
-from likepy.compiler import dump_ast, LikepyCompiler
+from likepy.compiler import LikepyCompiler
 from likepy.asthelper import dump_code
 
 lkpy = LikepyCompiler()
