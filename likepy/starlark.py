@@ -54,6 +54,74 @@ class StarLarkParser:
         self.reset(mark)
         return None
 
+    def compound_stmt(self):
+        # compound_stmt: &('def') function_def | &'if' if_stmt | &('with') with_stmt | &'for' for_stmt | &'try' try_stmt | &'while' while_stmt
+        mark = self.mark()
+        if (
+            self.positive_lookahead(self.expect, 'def')
+            and
+            (function_def := self.function_def())
+        ):
+            return [function_def]
+        self.reset(mark)
+        if (
+            self.positive_lookahead(self.expect, 'if')
+            and
+            (if_stmt := self.if_stmt())
+        ):
+            return [if_stmt]
+        self.reset(mark)
+        if (
+            self.positive_lookahead(self.expect, 'with')
+            and
+            (with_stmt := self.with_stmt())
+        ):
+            return [with_stmt]
+        self.reset(mark)
+        if (
+            self.positive_lookahead(self.expect, 'for')
+            and
+            (for_stmt := self.for_stmt())
+        ):
+            return [for_stmt]
+        self.reset(mark)
+        if (
+            self.positive_lookahead(self.expect, 'try')
+            and
+            (try_stmt := self.try_stmt())
+        ):
+            return [try_stmt]
+        self.reset(mark)
+        if (
+            self.positive_lookahead(self.expect, 'while')
+            and
+            (while_stmt := self.while_stmt())
+        ):
+            return [while_stmt]
+        self.reset(mark)
+        return None
+
+    def function_def(self):
+        # function_def: 'def' NAME '(' params? ')' ['->' expression] ':' func_type_comment? block | ASYNC 'def' NAME '(' params? ')' ['->' expression] ':' func_type_comment? block
+        mark = self.mark()
+        if (
+            (literal := self.expect('def'))
+            and
+            (n := self.name())
+            and
+            (literal_1 := self.expect('('))
+            and
+            (params := self.params(),)
+            and
+            (literal_2 := self.expect(')'))
+            and
+            (literal_3 := self.expect(':'))
+            and
+            (b := self.block())
+        ):
+            return
+        return None
+
     def showpeek(self) -> str:
         tok = self._tokenizer.peek()
         return f"{tok.start[0]}.{tok.start[1]}: {token.tok_name[tok.type]}:{tok.string!r}"
