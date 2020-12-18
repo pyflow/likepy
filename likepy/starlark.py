@@ -119,8 +119,21 @@ class StarLarkParser:
             and
             (b := self.block())
         ):
-            return
+            return ast.FunctionDef(n, params, b)
         return None
+
+    def params(self):
+        # params: invalid_parameters | parameters
+        mark = self.mark()
+        self.reset(mark)
+        return None
+
+    def block(self):
+        # block: NEWLINE INDENT statements DEDENT | simple_stmts | invalid_block
+        mark = self.mark()
+        self.reset(mark)
+        return None
+
 
     def showpeek(self) -> str:
         tok = self._tokenizer.peek()
