@@ -18,6 +18,7 @@ class LikepyTokenizer:
         self._tokens = []
         self._index = 0
         self._verbose = verbose
+        self._tokengen = self.get_tokens()
         if verbose:
             self.report(False, False)
 

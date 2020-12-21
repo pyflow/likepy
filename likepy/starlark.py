@@ -22,7 +22,9 @@ class StarLarkParser:
 
     def parse(self):
         mark = self.mark()
-        if ((a := self.statements(),)
+        if ((encoding := self.expect('ENCODING'))
+            and
+            (a := self.statements())
             and
             (endmarker := self.expect('ENDMARKER'))
         ):
@@ -34,7 +36,7 @@ class StarLarkParser:
         mark = self.mark()
         children = []
         while ((statement := self.statement())):
-            children.append([statement])
+            children.append(statement)
             mark = self.mark()
         self.reset(mark)
         return children
@@ -62,42 +64,66 @@ class StarLarkParser:
             and
             (function_def := self.function_def())
         ):
-            return [function_def]
+            return function_def
         self.reset(mark)
         if (
             self.positive_lookahead(self.expect, 'if')
             and
             (if_stmt := self.if_stmt())
         ):
-            return [if_stmt]
+            return if_stmt
         self.reset(mark)
         if (
             self.positive_lookahead(self.expect, 'with')
             and
             (with_stmt := self.with_stmt())
         ):
-            return [with_stmt]
+            return with_stmt
         self.reset(mark)
         if (
             self.positive_lookahead(self.expect, 'for')
             and
             (for_stmt := self.for_stmt())
         ):
-            return [for_stmt]
+            return for_stmt
         self.reset(mark)
         if (
             self.positive_lookahead(self.expect, 'try')
             and
             (try_stmt := self.try_stmt())
         ):
-            return [try_stmt]
+            return try_stmt
         self.reset(mark)
         if (
             self.positive_lookahead(self.expect, 'while')
             and
             (while_stmt := self.while_stmt())
         ):
-            return [while_stmt]
+            return while_stmt
+        self.reset(mark)
+        return None
+
+    def simple_stmts(self):
+        # simple_stmts: simple_stmt !';' NEWLINE | ';'.simple_stmt+ ';'? NEWLINE
+        mark = self.mark()
+        if (
+            (a := self.simple_stmt())
+            and
+            self.negative_lookahead(self.expect, ';')
+            and
+            (newline := self.expect('NEWLINE'))
+        ):
+            return a
+        self.reset(mark)
+        return None
+
+    def simple_stmt(self):
+        # simple_stmt: assignment | star_expressions | &'return' return_stmt | &('import' | 'from') import_stmt | &'raise' raise_stmt | 'pass' | &'del' del_stmt | &'yield' yield_stmt | &'assert' assert_stmt | 'break' | 'continue' | &'global' global_stmt | &'nonlocal' nonlocal_stmt
+        mark = self.mark()
+        if (
+            (literal := self.expect('pass'))
+        ):
+            return ast.Pass()
         self.reset(mark)
         return None
 
@@ -131,6 +157,26 @@ class StarLarkParser:
     def block(self):
         # block: NEWLINE INDENT statements DEDENT | simple_stmts | invalid_block
         mark = self.mark()
+        if (
+            (newline := self.expect('NEWLINE'))
+            and
+            (indent := self.expect('INDENT'))
+            and
+            (a := self.statements())
+            and
+            (dedent := self.expect('DEDENT'))
+        ):
+            return a
+        self.reset(mark)
+        if (
+            (simple_stmts := self.simple_stmts())
+        ):
+            return [simple_stmts]
+        self.reset(mark)
+        # if (
+        #     (invalid_block := self.invalid_block())
+        # ):
+        #     return [invalid_block]
         self.reset(mark)
         return None
 
