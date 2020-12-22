@@ -118,14 +118,89 @@ class StarLarkParser:
         return None
 
     def simple_stmt(self):
-        # simple_stmt: assignment | star_expressions | &'return' return_stmt | &('import' | 'from') import_stmt | &'raise' raise_stmt | 'pass' | &'del' del_stmt | &'yield' yield_stmt | &'assert' assert_stmt | 'break' | 'continue' | &'global' global_stmt | &'nonlocal' nonlocal_stmt
+        # simple_stmt: assignment | star_expressions | &'return' return_stmt | &('import' | 'from') import_stmt | &'raise' raise_stmt | 'pass' | &'del' del_stmt | &'yield' yield_stmt | &'assert' assert_stmt | 'break' | 'continue'
         mark = self.mark()
+        if (
+            (assignment := self.assignment())
+        ):
+            return assignment
         if (
             (literal := self.expect('pass'))
         ):
             return ast.Pass()
         self.reset(mark)
         return None
+
+    def assignment(self):
+        # assignment: ('(' single_target ')' | single_subscript_attribute_target) ':' expression ['=' annotated_rhs] | ((star_targets '='))+ (yield_expr | star_expressions) !'=' TYPE_COMMENT? | single_target augassign ~ (yield_expr | star_expressions) | invalid_assignment
+        mark = self.mark()
+        if (
+            (a := self.name())
+            and
+            (c := self.assignment_rhs())
+        ):
+            return ast.Assign(targets=[ast.Name(id=a.string)], value=c)
+        self.reset(mark)
+        return None
+
+    def assignment_rhs(self):
+        mark = self.mark()
+        if (
+            (literal := self.expect('='))
+            and
+            (d := self.annotated_rhs())
+        ):
+            return d
+        self.reset(mark)
+        return None
+
+    def annotated_rhs(self):
+        # annotated_rhs: star_expressions
+        mark = self.mark()
+        if (
+            (atom := self.atom())
+        ):
+            return atom
+        self.reset(mark)
+        return None
+
+    def atom(self):
+        # atom: NAME | 'True' | 'False' | 'None' | &STRING strings | NUMBER | &'(' (tuple | group | genexp) | &'[' (list | listcomp) | &'{' (dict | set | dictcomp | setcomp) | '...'
+        mark = self.mark()
+        if (
+            (name := self.name())
+        ):
+            return ast.Name(id=name.string)
+        self.reset(mark)
+        if (
+            (literal := self.expect('True'))
+        ):
+            return ast.Constant(value=True)
+        self.reset(mark)
+        if (
+            (literal := self.expect('False'))
+        ):
+            return ast.Constant(value=False)
+        self.reset(mark)
+        if (
+            (literal := self.expect('None'))
+        ):
+            return ast.Constant(value=None)
+        self.reset(mark)
+        # if (
+        #     self.positive_lookahead(self.string, )
+        #     and
+        #     (strings := self.strings())
+        # ):
+        #     return [strings]
+        self.reset(mark)
+        if (
+            (number := self.number())
+        ):
+            return ast.Constant(value=ast.literal_eval(number.string))
+        self.reset(mark)
+        return None
+
 
     def function_def(self):
         # function_def: 'def' NAME '(' params? ')' ['->' expression] ':' func_type_comment? block | ASYNC 'def' NAME '(' params? ')' ['->' expression] ':' func_type_comment? block
@@ -145,12 +220,19 @@ class StarLarkParser:
             and
             (b := self.block())
         ):
-            return ast.FunctionDef(n, params, b)
+            return ast.FunctionDef(n.string, params, b)
         return None
 
     def params(self):
         # params: invalid_parameters | parameters
         mark = self.mark()
+        return ast.arguments(posonlyargs=[],
+                args=[],
+                vararg=None,
+                kwonlyargs=[],
+                kw_defaults=[],
+                kwarg=None,
+                defaults=[])
         self.reset(mark)
         return None
 

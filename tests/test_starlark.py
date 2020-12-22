@@ -4,6 +4,7 @@ import ast
 
 code = '''
 def controlflow():
+    x = 0
     pass
 '''
 
