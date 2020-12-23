@@ -5,6 +5,8 @@ import ast
 code = '''
 def controlflow():
     x = 0
+    y = 'abc'
+    z = "ab""cdef"
     pass
 '''
 

@@ -187,12 +187,12 @@ class StarLarkParser:
         ):
             return ast.Constant(value=None)
         self.reset(mark)
-        # if (
-        #     self.positive_lookahead(self.string, )
-        #     and
-        #     (strings := self.strings())
-        # ):
-        #     return [strings]
+        if (
+            self.positive_lookahead(self.string, )
+            and
+            (strings := self.strings())
+        ):
+            return ast.Constant(value="".join(strings))
         self.reset(mark)
         if (
             (number := self.number())
@@ -200,6 +200,17 @@ class StarLarkParser:
             return ast.Constant(value=ast.literal_eval(number.string))
         self.reset(mark)
         return None
+
+    def strings(self):
+        mark = self.mark()
+        children = []
+        while (
+            (string := self.string())
+        ):
+            children.append(ast.literal_eval(string.string))
+            mark = self.mark()
+        self.reset(mark)
+        return children
 
 
     def function_def(self):
