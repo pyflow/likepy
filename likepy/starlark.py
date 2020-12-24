@@ -199,6 +199,32 @@ class StarLarkParser:
         ):
             return ast.Constant(value=ast.literal_eval(number.string))
         self.reset(mark)
+        if (
+            self.positive_lookahead(self.expect, '(')
+            and
+            (_tuple := self.p_tuple())
+        ):
+            return _tuple
+        self.reset(mark)
+        if (
+            (literal := self.expect('...'))
+        ):
+            return ast.Constant(value=Ellipsis)
+        self.reset(mark)
+        return None
+
+    def p_tuple(self):
+        # tuple: '(' [star_named_expression ',' star_named_expressions?] ')'
+        mark = self.mark()
+        if (
+            (literal := self.expect('('))
+            # and
+            # (a := self._tmp_98(),)
+            and
+            (literal_1 := self.expect(')'))
+        ):
+            return ast.Tuple(elts=[])
+        self.reset(mark)
         return None
 
     def strings(self):

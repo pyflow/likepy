@@ -7,6 +7,8 @@ def controlflow():
     x = 0
     y = 'abc'
     z = "ab""cdef"
+    a = ()
+    b = ...
     pass
 '''
 
