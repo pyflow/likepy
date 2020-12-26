@@ -231,27 +231,6 @@ class StarLarkParser:
         # Expression = Test {',' Test} .
         return None
 
-
-    def primary(self):
-        '''
-        PrimaryExpr = Operand
-            | PrimaryExpr DotSuffix
-            | PrimaryExpr CallSuffix
-            | PrimaryExpr SliceSuffix
-            .
-        '''
-
-    def operand(self):
-        '''
-        Operand = identifier
-            | int | float | string
-            | ListExpr | ListComp
-            | DictExpr | DictComp
-            | '(' [Expression [',']] ')'
-            .
-        '''
-
-
     def strings(self):
         mark = self.mark()
         children = []
