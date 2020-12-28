@@ -165,7 +165,7 @@ class StarLarkParser:
         return None
 
     def atom(self):
-        # atom: NAME | 'True' | 'False' | 'None' | &STRING strings | NUMBER | &'(' (tuple | group | genexp) | &'[' (list | listcomp) | &'{' (dict | set | dictcomp | setcomp) | '...'
+        # atom: NAME | 'True' | 'False' | 'None' | &STRING strings | NUMBER | &'(' (tuple | group | genexp) | &'[' (list | listcomp) | &'{' (dict | dictcomp ) | '...'
         mark = self.mark()
         if (
             (name := self.name())
@@ -244,7 +244,7 @@ class StarLarkParser:
 
 
     def function_def(self):
-        # function_def: 'def' NAME '(' params? ')' ['->' expression] ':' func_type_comment? block | ASYNC 'def' NAME '(' params? ')' ['->' expression] ':' func_type_comment? block
+        # function_def: 'def' NAME '(' params? ')' ['->' expression] ':' block
         mark = self.mark()
         if (
             (literal := self.expect('def'))
