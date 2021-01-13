@@ -27,10 +27,10 @@ type_expressions:
 statements[asdl_stmt_seq*]: a=statement+ { (asdl_stmt_seq*)_PyPegen_seq_flatten(p, a) }
 statement[asdl_stmt_seq*]: a=compound_stmt { (asdl_stmt_seq*)_PyPegen_singleton_seq(p, a) } | a[asdl_stmt_seq*]=simple_stmts { a }
 statement_newline[asdl_stmt_seq*]:
-    | a=compound_stmt NEWLINE { (asdl_stmt_seq*)_PyPegen_singleton_seq(p, a) }
+    | a=compound_stmt NEWLINE
     | simple_stmts
-    | NEWLINE { (asdl_stmt_seq*)_PyPegen_singleton_seq(p, CHECK(stmt_ty, _Py_Pass(EXTRA))) }
-    | ENDMARKER { _PyPegen_interactive_exit(p) }
+    | NEWLINE
+    | ENDMARKER
 simple_stmts[asdl_stmt_seq*]:
     | a=simple_stmt !';' NEWLINE { (asdl_stmt_seq*)_PyPegen_singleton_seq(p, a) } # Not needed, there for speedup
     | a[asdl_stmt_seq*]=';'.simple_stmt+ [';'] NEWLINE { a }
@@ -47,7 +47,6 @@ simple_stmt:
 compound_stmt:
     | &('def' | '@') function_def
     | &'if' if_stmt
-    | &('with') with_stmt
     | &('for') for_stmt
     | &'try' try_stmt
     | &'while' while_stmt
@@ -81,13 +80,11 @@ del_stmt:
     | invalid_del_stmt
 
 if_stmt:
-    | 'if' a=expression ':' b=block c=elif_stmt {
-        _Py_If(a, b, CHECK(asdl_stmt_seq*, _PyPegen_singleton_seq(p, c)), EXTRA) }
-    | 'if' a=expression ':' b=block c=[else_block] { _Py_If(a, b, c, EXTRA) }
+    | 'if' a=expression ':' b=block c=elif_stmt
+    | 'if' a=expression ':' b=block c=[else_block]
 elif_stmt:
-    | 'elif' a=expression ':' b=block c=elif_stmt {
-        _Py_If(a, b, CHECK(asdl_stmt_seq*, _PyPegen_singleton_seq(p, c)), EXTRA) }
-    | 'elif' a=expression ':' b=block c=[else_block] { _Py_If(a, b, c, EXTRA) }
+    | 'elif' a=expression ':' b=block c=elif_stmt
+    | 'elif' a=expression ':' b=block c=[else_block]
 else_block[asdl_stmt_seq*]: 'else' ':' b=block { b }
 
 while_stmt:
@@ -96,14 +93,6 @@ while_stmt:
 for_stmt:
     | 'for' t=star_targets 'in' ~ ex=star_expressions ':' tc=[TYPE_COMMENT] b=block el=[else_block]
     | invalid_for_target
-
-with_stmt:
-    | 'with' '(' a[asdl_withitem_seq*]=','.with_item+ ','? ')' ':' b=block
-    | 'with' a[asdl_withitem_seq*]=','.with_item+ ':' tc=[TYPE_COMMENT] b=block
-with_item[withitem_ty]:
-    | e=expression 'as' t=star_target &(',' | ')' | ':') { _Py_withitem(e, t, p->arena) }
-    | invalid_with_item
-    | e=expression { _Py_withitem(e, NULL, p->arena) }
 
 
 return_stmt:
@@ -121,14 +110,11 @@ params[arguments_ty]:
     | parameters
 
 parameters[arguments_ty]:
-    | a=slash_no_default b[asdl_arg_seq*]=param_no_default* c=param_with_default* d=[star_etc] {
-        _PyPegen_make_arguments(p, a, NULL, b, c, d) }
-    | a=slash_with_default b=param_with_default* c=[star_etc] {
-        _PyPegen_make_arguments(p, NULL, a, NULL, b, c) }
-    | a[asdl_arg_seq*]=param_no_default+ b=param_with_default* c=[star_etc] {
-        _PyPegen_make_arguments(p, NULL, NULL, a, b, c) }
-    | a=param_with_default+ b=[star_etc] { _PyPegen_make_arguments(p, NULL, NULL, NULL, a, b)}
-    | a=star_etc { _PyPegen_make_arguments(p, NULL, NULL, NULL, NULL, a) }
+    | a=slash_no_default b[asdl_arg_seq*]=param_no_default* c=param_with_default* d=[star_etc]
+    | a=slash_with_default b=param_with_default* c=[star_etc]
+    | a[asdl_arg_seq*]=param_no_default+ b=param_with_default* c=[star_etc]
+    | a=param_with_default+ b=[star_etc]
+    | a=star_etc
 
 # Some duplication here because we can't write (',' | &')'),
 # which is because we don't support empty alternatives (yet).
@@ -137,15 +123,13 @@ slash_no_default[asdl_arg_seq*]:
     | a[asdl_arg_seq*]=param_no_default+ '/' ',' { a }
     | a[asdl_arg_seq*]=param_no_default+ '/' &')' { a }
 slash_with_default[SlashWithDefault*]:
-    | a=param_no_default* b=param_with_default+ '/' ',' { _PyPegen_slash_with_default(p, (asdl_arg_seq *)a, b) }
-    | a=param_no_default* b=param_with_default+ '/' &')' { _PyPegen_slash_with_default(p, (asdl_arg_seq *)a, b) }
+    | a=param_no_default* b=param_with_default+ '/' ','
+    | a=param_no_default* b=param_with_default+ '/' &')'
 
 star_etc[StarEtc*]:
-    | '*' a=param_no_default b=param_maybe_default* c=[kwds] {
-        _PyPegen_star_etc(p, a, b, c) }
-    | '*' ',' b=param_maybe_default+ c=[kwds] {
-        _PyPegen_star_etc(p, NULL, b, c) }
-    | a=kwds { _PyPegen_star_etc(p, NULL, NULL, a) }
+    | '*' a=param_no_default b=param_maybe_default* c=[kwds]
+    | '*' ',' b=param_maybe_default+ c=[kwds]
+    | a=kwds
     | invalid_star_etc
 
 kwds[arg_ty]: '**' a=param_no_default { a }
@@ -163,18 +147,17 @@ kwds[arg_ty]: '**' a=param_no_default { a }
 # The latter form is for a final parameter without trailing comma.
 #
 param_no_default[arg_ty]:
-    | a=param ',' tc=TYPE_COMMENT? { _PyPegen_add_type_comment_to_arg(p, a, tc) }
-    | a=param tc=TYPE_COMMENT? &')' { _PyPegen_add_type_comment_to_arg(p, a, tc) }
+    | a=param ','
+    | a=param &')'
 param_with_default[NameDefaultPair*]:
-    | a=param c=default ',' tc=TYPE_COMMENT? { _PyPegen_name_default_pair(p, a, c, tc) }
-    | a=param c=default tc=TYPE_COMMENT? &')' { _PyPegen_name_default_pair(p, a, c, tc) }
+    | a=param c=default ','
+    | a=param c=default &')'
 param_maybe_default[NameDefaultPair*]:
-    | a=param c=default? ',' tc=TYPE_COMMENT? { _PyPegen_name_default_pair(p, a, c, tc) }
-    | a=param c=default? tc=TYPE_COMMENT? &')' { _PyPegen_name_default_pair(p, a, c, tc) }
-param[arg_ty]: a=NAME b=annotation? { _Py_arg(a->v.Name.id, b, NULL, EXTRA) }
+    | a=param c=default? ','
+    | a=param c=default? &')'
+param[arg_ty]: a=NAME
 
-annotation: ':' a=expression { a }
-default: '=' a=expression { a }
+default: '=' a=expression
 
 
 block[asdl_stmt_seq*]:
@@ -183,9 +166,8 @@ block[asdl_stmt_seq*]:
     | invalid_block
 
 star_expressions:
-    | a=star_expression b=(',' c=star_expression { c })+ [','] {
-        _Py_Tuple(CHECK(asdl_expr_seq*, _PyPegen_seq_insert_in_front(p, a, b)), Load, EXTRA) }
-    | a=star_expression ',' { _Py_Tuple(CHECK(asdl_expr_seq*, _PyPegen_singleton_seq(p, a)), Load, EXTRA) }
+    | a=star_expression b=(',' c=star_expression { c })+ [',']
+    | a=star_expression ','
     | star_expression
 star_expression:
     | '*' a=bitwise_or { _Py_Starred(a, Load, EXTRA) }
@@ -199,9 +181,8 @@ star_expression:
 annotated_rhs: star_expressions
 
 expressions:
-    | a=expression b=(',' c=expression { c })+ [','] {
-        _Py_Tuple(CHECK(asdl_expr_seq*, _PyPegen_seq_insert_in_front(p, a, b)), Load, EXTRA) }
-    | a=expression ',' { _Py_Tuple(CHECK(asdl_expr_seq*, _PyPegen_singleton_seq(p, a)), Load, EXTRA) }
+    | a=expression b=(',' c=expression { c })+ [',']
+    | a=expression ','
     | expression
 expression:
     | a=disjunction 'if' b=disjunction 'else' c=expression { _Py_IfExp(b, a, c, EXTRA) }
@@ -209,8 +190,7 @@ expression:
     | lambdef
 
 lambdef:
-    | 'lambda' a=[lambda_params] ':' b=expression {
-        _Py_Lambda((a) ? a : CHECK(arguments_ty, _PyPegen_empty_arguments(p)), b, EXTRA) }
+    | 'lambda' a=[lambda_params] ':' b=expression
 
 lambda_params[arguments_ty]:
     | invalid_lambda_parameters
@@ -221,27 +201,22 @@ lambda_params[arguments_ty]:
 # a colon, not a close parenthesis.  (For more, see parameters above.)
 #
 lambda_parameters[arguments_ty]:
-    | a=lambda_slash_no_default b[asdl_arg_seq*]=lambda_param_no_default* c=lambda_param_with_default* d=[lambda_star_etc] {
-        _PyPegen_make_arguments(p, a, NULL, b, c, d) }
-    | a=lambda_slash_with_default b=lambda_param_with_default* c=[lambda_star_etc] {
-        _PyPegen_make_arguments(p, NULL, a, NULL, b, c) }
-    | a[asdl_arg_seq*]=lambda_param_no_default+ b=lambda_param_with_default* c=[lambda_star_etc] {
-        _PyPegen_make_arguments(p, NULL, NULL, a, b, c) }
-    | a=lambda_param_with_default+ b=[lambda_star_etc] { _PyPegen_make_arguments(p, NULL, NULL, NULL, a, b)}
-    | a=lambda_star_etc { _PyPegen_make_arguments(p, NULL, NULL, NULL, NULL, a) }
+    | a=lambda_slash_no_default b[asdl_arg_seq*]=lambda_param_no_default* c=lambda_param_with_default* d=[lambda_star_etc]
+    | a=lambda_slash_with_default b=lambda_param_with_default* c=[lambda_star_etc]
+    | a[asdl_arg_seq*]=lambda_param_no_default+ b=lambda_param_with_default* c=[lambda_star_etc]
+    | a=lambda_param_with_default+ b=[lambda_star_etc]
+    | a=lambda_star_etc
 
 lambda_slash_no_default[asdl_arg_seq*]:
     | a[asdl_arg_seq*]=lambda_param_no_default+ '/' ',' { a }
     | a[asdl_arg_seq*]=lambda_param_no_default+ '/' &':' { a }
 lambda_slash_with_default[SlashWithDefault*]:
-    | a=lambda_param_no_default* b=lambda_param_with_default+ '/' ',' { _PyPegen_slash_with_default(p, (asdl_arg_seq *)a, b) }
-    | a=lambda_param_no_default* b=lambda_param_with_default+ '/' &':' { _PyPegen_slash_with_default(p, (asdl_arg_seq *)a, b) }
+    | a=lambda_param_no_default* b=lambda_param_with_default+ '/' ','
+    | a=lambda_param_no_default* b=lambda_param_with_default+ '/' &':'
 
 lambda_star_etc[StarEtc*]:
-    | '*' a=lambda_param_no_default b=lambda_param_maybe_default* c=[lambda_kwds] {
-        _PyPegen_star_etc(p, a, b, c) }
-    | '*' ',' b=lambda_param_maybe_default+ c=[lambda_kwds] {
-        _PyPegen_star_etc(p, NULL, b, c) }
+    | '*' a=lambda_param_no_default b=lambda_param_maybe_default* c=[lambda_kwds]
+    | '*' ',' b=lambda_param_maybe_default+ c=[lambda_kwds]
     | a=lambda_kwds { _PyPegen_star_etc(p, NULL, NULL, a) }
     | invalid_lambda_star_etc
 
@@ -251,12 +226,12 @@ lambda_param_no_default[arg_ty]:
     | a=lambda_param ',' { a }
     | a=lambda_param &':' { a }
 lambda_param_with_default[NameDefaultPair*]:
-    | a=lambda_param c=default ',' { _PyPegen_name_default_pair(p, a, c, NULL) }
-    | a=lambda_param c=default &':' { _PyPegen_name_default_pair(p, a, c, NULL) }
+    | a=lambda_param c=default ','
+    | a=lambda_param c=default &':'
 lambda_param_maybe_default[NameDefaultPair*]:
-    | a=lambda_param c=default? ',' { _PyPegen_name_default_pair(p, a, c, NULL) }
-    | a=lambda_param c=default? &':' { _PyPegen_name_default_pair(p, a, c, NULL) }
-lambda_param[arg_ty]: a=NAME { _Py_arg(a->v.Name.id, NULL, NULL, EXTRA) }
+    | a=lambda_param c=default? ','
+    | a=lambda_param c=default? &':'
+lambda_param[arg_ty]: a=NAME
 
 disjunction:
     | a=conjunction b=('or' c=conjunction { c })+
@@ -491,14 +466,11 @@ invalid_block:
 invalid_primary:
     | primary a='{' { RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "invalid syntax") }
 invalid_comprehension:
-    | ('[' | '(' | '{') a=starred_expression for_if_clauses {
-        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "iterable unpacking cannot be used in comprehension") }
+    | ('[' | '(' | '{') a=starred_expression for_if_clauses
 invalid_dict_comprehension:
-    | '{' a='**' bitwise_or for_if_clauses '}' {
-        RAISE_SYNTAX_ERROR_KNOWN_LOCATION(a, "dict unpacking cannot be used in dict comprehension") }
+    | '{' a='**' bitwise_or for_if_clauses '}'
 invalid_parameters:
-    | param_no_default* (slash_with_default | param_with_default+) param_no_default {
-        RAISE_SYNTAX_ERROR("non-default argument follows default argument") }
+    | param_no_default* (slash_with_default | param_with_default+) param_no_default
 invalid_lambda_parameters:
     | lambda_param_no_default* (lambda_slash_with_default | lambda_param_with_default+) lambda_param_no_default
 invalid_star_etc:
