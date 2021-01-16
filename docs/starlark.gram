@@ -5,7 +5,6 @@
 file: a=[statements] ENDMARKER
 interactive: a=statement_newline
 eval: a=expressions NEWLINE* ENDMARKER
-fstring: star_expressions
 
 statements: a=statement+
 statement: a=compound_stmt | a=simple_stmts
@@ -132,11 +131,6 @@ star_expressions:
     | a=star_expression b=(',' c=star_expression )+ [',']
     | a=star_expression ','
     | star_expression
-star_expression:
-    | '*' a=bitwise_or
-    | expression
-
-star_expressions: a=','.star_expression+ [',']
 star_expression:
     | '*' a=bitwise_or
     | expression
