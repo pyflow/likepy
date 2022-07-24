@@ -28,7 +28,7 @@ setup(
     license='MIT License',
     description=(
         'Provoide a trust environment for python like programming language,'
-        ' like RestrictedPython and starlark. '
+        ' like RestrictedPython. '
     ),
     long_description=(
         read('README.md')
@@ -45,7 +45,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: Implementation :: CPython'
     ],
-    keywords='restricted starlark',
+    keywords='restricted',
     author='Zhuo Wei',
     author_email='zeaphoo@qq.com',
     project_urls={

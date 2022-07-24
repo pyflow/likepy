@@ -20,8 +20,3 @@ from .restricted import (
     RestrictedPython,
     RestrictedExpression
 )
-
-from .starlark import (
-    starlark,
-    StarLark
-)
