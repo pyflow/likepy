@@ -43,6 +43,8 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: Implementation :: CPython'
     ],
     keywords='restricted',
@@ -53,7 +55,7 @@ setup(
     packages=find_packages(),
     install_requires=[
     ],
-    python_requires=">=3.6",  # NOQA: E501
+    python_requires=">=3.6, <3.12",
     tests_require=tests_require,
     extras_require={
         'test': tests_require,

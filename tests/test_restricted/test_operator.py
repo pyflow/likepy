@@ -102,7 +102,7 @@ def test_Is():
 
 
 def test_NotIs():
-    assert restricted_eval('1 is not True') is True
+    assert restricted_eval('1 is not None') is True
 
 def test_In():
     assert restricted_eval('1 in [1, 2, 3]') is True
