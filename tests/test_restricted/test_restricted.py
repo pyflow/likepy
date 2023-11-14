@@ -1,4 +1,4 @@
-from likepy.restricted import restrictedexpr, RestrictedExpression
+from likepy.restricted import restrictedexpr, RestrictedExpression, restrictedpy
 
 import pytest
 
@@ -43,3 +43,13 @@ def test__eval_2():
     """It allows to use list comprehensions."""
     result = restrictedexpr.eval("[item for item in (1, 2)]", {})
     assert result == [1, 2]
+
+def test__eval_3():
+    """It allows to use list comprehensions."""
+    result = restrictedpy.eval("int(value*0.6)", {"value": 22})
+    assert result == 13
+
+def test__eval_4():
+    """It allows to use list comprehensions."""
+    result = restrictedexpr.eval("value*0.6", {"value": 22})
+    assert result == 13.2

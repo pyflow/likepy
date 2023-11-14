@@ -163,6 +163,7 @@ class RestrictedExpression(object):
 
     def compile_expr(self, expr):
         result = compile_restricted_eval(expr, '<string>')
+
         if result.errors:
             raise SyntaxError(result.errors[0])
         used = tuple(result.used_names)
