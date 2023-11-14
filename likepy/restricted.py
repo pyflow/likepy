@@ -6,6 +6,7 @@ from .exceptions import CompileError
 
 import ast
 import warnings
+import copy
 
 CompileResult = namedtuple(
     'CompileResult', 'code, errors, warnings, used_names')
@@ -102,10 +103,12 @@ def compile_restricted_eval(
 
 
 class RestrictedPython:
-    def eval(self, source, restricted_globals=None):
+    def eval(self, source, restricted_globals=None, builtins=True):
         if restricted_globals is None:
             restricted_globals = {}
-        if '__builtins__' not in restricted_globals:
+        if builtins and '__builtins__' not in restricted_globals:
+            original_globals = restricted_globals
+            restricted_globals = copy.copy(original_globals)
             restricted_globals['__builtins__'] = safe_builtins.copy()
         result = compile_restricted_eval(source)
         if result.errors:
@@ -113,10 +116,12 @@ class RestrictedPython:
         assert result.code is not None
         return eval(result.code, restricted_globals)
 
-    def exec(self, source, restricted_globals=None):
+    def exec(self, source, restricted_globals=None, builtins=True):
         if restricted_globals is None:
             restricted_globals = {}
-        if '__builtins__' not in restricted_globals:
+        if builtins and '__builtins__' not in restricted_globals:
+            original_globals = restricted_globals
+            restricted_globals = copy.copy(original_globals)
             restricted_globals['__builtins__'] = safe_builtins.copy()
         result = compile_restricted_exec(source)
         assert result.errors == (), result.errors
