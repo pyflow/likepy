@@ -849,7 +849,7 @@ class RestrictingNodeTransformer(ast.NodeTransformer):
 
         The _write_ function should return a security proxy.
         """
-        if node.attr.startswith('_') and node.attr != '_':
+        if node.attr.startswith('__') and node.attr != '__':
             self.error(
                 node,
                 '"{name}" is an invalid attribute name because it starts '

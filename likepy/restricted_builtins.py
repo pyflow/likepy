@@ -283,9 +283,6 @@ def guarded_unpack_sequence(it, spec, _getiter_):
     return ret
 
 
-safe_globals = {'__builtins__': safe_builtins}
-
-
 def limited_range(iFirst, *args):
     # limited range function from Martijn Pieters
     RANGELIMIT = 1000

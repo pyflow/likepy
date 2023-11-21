@@ -20,3 +20,8 @@ from .restricted import (
     RestrictedPython,
     RestrictedExpression
 )
+
+from .restricted_builtins import (
+    safe_builtins,
+    safer_getattr
+)
